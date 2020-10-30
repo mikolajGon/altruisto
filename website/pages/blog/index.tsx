@@ -64,30 +64,37 @@ const BlogList: React.FC<BlogList> = ({ mainPage, posts, tags, pagination, metaT
 }
 
 export async function getServerSideProps({ query }) {
-  const metaData = await getBlogMeta()
-  const blogPostTags = getBlogTags(metaData)
+  try {
+    const metaData = await getBlogMeta()
+    const blogPostTags = getBlogTags(metaData)
+  
+    const [mainPageQueryData, posts] = await Promise.all([
+      PrismicApi().query(Prismic.Predicates.at("my.blog-posts-list.blog-page", BlogPages.MainPage)),
+      PrismicApi().query(Prismic.Predicates.any("document.type", ["blog-post"]), {
+        pageSize: 8,
+        page: query.page || 1
+      })
+    ])
+  
+    const mainPage = getNestedPropertyFromObject(mainPageQueryData, "results[0]", {})
 
-  const [mainPageQueryData, posts] = await Promise.all([
-    PrismicApi().query(Prismic.Predicates.at("my.blog-posts-list.blog-page", BlogPages.MainPage)),
-    PrismicApi().query(Prismic.Predicates.any("document.type", ["blog-post"]), {
-      pageSize: 8,
-      page: query.page || 1
-    })
-  ])
-
-  const mainPage = getNestedPropertyFromObject(mainPageQueryData, "results[0]", {})
-
-  return {
-    props: {
-      mainPage: getDataFromPostsList(mainPage),
-      metaTags: getMetaTags(mainPage),
-      posts: posts.results,
-      tags: blogPostTags,
-      pagination: {
-        page: posts.page,
-        totalPages: posts.total_pages
+    console.log(posts);
+    
+  
+    return {
+      props: {
+        mainPage: getDataFromPostsList(mainPage),
+        metaTags: getMetaTags(mainPage),
+        posts: posts.results,
+        tags: blogPostTags,
+        pagination: {
+          page: posts.page,
+          totalPages: posts.total_pages
+        }
       }
     }
+  } catch (e) {
+
   }
 }
 

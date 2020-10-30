@@ -1,7 +1,7 @@
 import React from "react"
 import ErrorPage from "next/error"
 import Prismic from "prismic-javascript"
-import PrismicApi, { getBlogMeta, getMetaTags } from "utils/prismic-api"
+import PrismicApi, { getMetaTags } from "utils/prismic-api"
 import { StandardLayout } from "components/layouts/StandardLayout"
 import InstallButton from "components/InstallButton"
 import RenderSlices from "components/blog/RenderSlices"
@@ -61,13 +61,6 @@ export async function getServerSideProps({ params }) {
 
   const post = results[0]
   if (!post) {
-    return {
-      props: {
-        error: {
-          statusCode: 404
-        }
-      }
-    }
   }
 
   const similarPostsQueryData = await PrismicApi().query([
